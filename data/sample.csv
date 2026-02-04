@@ -1,0 +1,11 @@
+text,label
+"Win a brand new phone today, click now",spam
+"Reminder: your appointment is scheduled for tomorrow",ham
+"Urgent! Update your account details to avoid suspension",spam
+"Team lunch at 12:30?",ham
+"Congratulations, you've been selected for a prize",spam
+"Can you review the latest proposal draft?",ham
+"Exclusive offer: limited-time discount just for you",spam
+"Please find the meeting notes attached",ham
+"Verify your identity to receive your reward",spam
+"Looking forward to our call next week",ham
