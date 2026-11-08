@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from typing import Iterable
+from collections.abc import Iterable
 
 from .features import FeatureConfig, featurize
 from .model import NaiveBayesModel

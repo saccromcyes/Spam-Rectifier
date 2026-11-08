@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
 
-from .features import FeatureConfig, featurize
+from .features import FeatureConfig, featurize, tokenize
 
 Label = str
 
@@ -29,7 +29,7 @@ class NaiveBayesModel:
     @classmethod
     def train(
         cls, texts: Iterable[str], labels: Iterable[Label], config: FeatureConfig
-    ) -> "NaiveBayesModel":
+    ) -> NaiveBayesModel:
         label_counts: dict[Label, int] = {}
         token_counts: dict[Label, dict[str, int]] = {}
         total_tokens: dict[Label, int] = {}
@@ -118,6 +118,21 @@ class NaiveBayesModel:
             ],
         }
 
+    def token_evidence(self, text: str, positive: Label = "spam") -> list[dict[str, object]]:
+        """Log-odds each word adds for `positive` versus the other label, in message order.
+
+        Unlike raw per-label likelihoods, this is discriminative: positive values push towards
+        spam, negative towards ham, so it can be shown as a highlight over the message itself.
+        """
+        negative = next((lbl for lbl in self.labels if lbl != positive), positive)
+        vocab_size = max(len(self.vocabulary), 1)
+        evidence = []
+        for token in tokenize(text, FeatureConfig(**{**self.config.__dict__, "use_bigrams": False})):
+            p = (self.token_counts[positive].get(token, 0) + 1) / (self.total_tokens[positive] + vocab_size)
+            q = (self.token_counts[negative].get(token, 0) + 1) / (self.total_tokens[negative] + vocab_size)
+            evidence.append({"token": token, "log_odds": round(math.log(p / q), 3)})
+        return evidence
+
     def top_tokens(self, label: Label, top_n: int = 12) -> list[tuple[str, float]]:
         vocab_size = max(len(self.vocabulary), 1)
         label_total = self.total_tokens[label]
@@ -148,7 +163,7 @@ class NaiveBayesModel:
         Path(path).write_text(json.dumps(payload, indent=2))
 
     @classmethod
-    def load(cls, path: str | Path) -> "NaiveBayesModel":
+    def load(cls, path: str | Path) -> NaiveBayesModel:
         payload = json.loads(Path(path).read_text())
         config = FeatureConfig(**payload["config"])
         metadata = payload.get("metadata", {})

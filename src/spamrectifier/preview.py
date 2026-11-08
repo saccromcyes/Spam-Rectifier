@@ -5,7 +5,6 @@ from __future__ import annotations
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
 
-
 PREVIEW_HTML = """<!DOCTYPE html>
 <html lang="en">
   <head>
