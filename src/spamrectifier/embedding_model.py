@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 import re
 from pathlib import Path
 
@@ -41,7 +42,8 @@ class FastEmbedder:
         from fastembed import TextEmbedding
 
         self.name = model_name
-        self._model = TextEmbedding(model_name=model_name, cache_dir=cache_dir)
+        threads = int(os.environ["ONNX_THREADS"]) if os.environ.get("ONNX_THREADS") else None  # 1 on small shared CPUs
+        self._model = TextEmbedding(model_name=model_name, cache_dir=cache_dir, threads=threads)
 
     def embed(self, texts: list[str]) -> np.ndarray:
         m = np.stack(list(self._model.embed(texts, batch_size=64))).astype(np.float32)
