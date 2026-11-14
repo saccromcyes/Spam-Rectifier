@@ -22,7 +22,8 @@ jobs:
       PYTHONPATH: src
       MODEL_CACHE_DIR: .cache/models
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-      LLM_MODEL: ${{ vars.LLM_MODEL || 'llama-3.1-8b-instant' }}
+      LLM_MODEL: ${{ vars.LLM_MODEL || 'openai/gpt-oss-20b' }}
+      LLM_MAX_RETRIES: 6
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,7 +36,7 @@ jobs:
           path: .cache/models
           key: models-bge-small
       - run: pip install -r requirements.txt
-      - run: python -m spamrectifier.benchmark --llm-sample 300 --pause 0.5
+      - run: python -m spamrectifier.benchmark --llm-sample 150 --pause 7  # Groq free tier: ~8k tokens per minute
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

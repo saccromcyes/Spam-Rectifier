@@ -18,7 +18,7 @@ Three ways to catch SMS spam, judged on the same messages:
 
 ## Benchmark
 
-All models are trained on the same 80% of the [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (de-duplicated, so no test message appears in training) and scored on the remaining 20%. The LLM is scored on a fixed 300-message sample to stay within free-tier limits. The table is refreshed by GitHub Actions.
+All models are trained on the same 80% of the [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (de-duplicated, so no test message appears in training) and scored on the remaining 20%. The LLM is scored on a fixed 150-message sample to stay within the free tier's daily token limit; calls that fail are reported and left out of its metrics rather than counted as verdicts. The table is refreshed by GitHub Actions.
 
 <!-- BENCHMARK:START -->
 _Held-out test set of 1031 messages (128 spam), run 2026-11-14._
