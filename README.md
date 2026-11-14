@@ -1,126 +1,67 @@
 # SpamRectifier
 
-SpamRectifier is a compact, production-minded spam detection toolkit that focuses on clarity and deployability. It includes:
+[![CI](https://github.com/saccromcyes/Spam-Rectifier/actions/workflows/ci.yml/badge.svg)](https://github.com/saccromcyes/Spam-Rectifier/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/live%20demo-Hugging%20Face-5B3CC4)](https://huggingface.co/spaces/saccromcyes/spam-rectifier)
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
-- A fast Naive Bayes classifier with configurable tokenization and bigram features.
-- A CLI for training, evaluation, and prediction.
-- JSON model persistence so you can ship a model artifact easily.
-- Built-in explainability for top token contributions.
-- Drift monitoring with Jensen-Shannon divergence on new data.
-- A FastAPI service wrapper for production inference.
-- Optional PII redaction (emails, URLs, numbers) during training.
-- A lightweight data contract (CSV with `text` + `label`).
-- Example data and tests.
+Three ways to catch SMS spam, judged on the same messages:
 
-## Why this stands out
+| Model | How it decides | How it explains itself |
+|---|---|---|
+| **Naive Bayes**, written from scratch | Word and bigram counts | Highlights each word by how strongly it points to spam or to a normal message |
+| **Embeddings + logistic regression** | Sentence meaning (bge-small, ONNX) | Shows the most similar labelled training messages |
+| **LLM, zero-shot** | Reads the message like a person | Writes a one-sentence reason |
 
-- **Explicit feature pipeline**: Tokenization and bigrams are configurable, making decisions transparent.
-- **No black boxes**: The model is fully inspectable, which helps in compliance-heavy environments.
-- **Production-friendly**: Model artifacts are pure JSON; no pickling or opaque binaries.
-- **Metrics included**: Precision, recall, F1, and accuracy are computed in one command.
-- **Explainability & drift**: Token-level contributions and dataset drift reports are first-class.
+**[Try it →](https://huggingface.co/spaces/saccromcyes/spam-rectifier)** Paste a message and see all three verdicts side by side, or open the Benchmark page.
 
-## Project structure
+<!-- Screenshot added after the first deploy: docs/screenshot.png -->
 
-```
-.
-├── data/
-│   └── sample.csv
-├── src/
-│   └── spamrectifier/
-│       ├── api.py
-│       ├── cli.py
-│       ├── data.py
-│       ├── features.py
-│       ├── monitoring.py
-│       ├── model.py
-│       └── reporting.py
-└── tests/
-    └── test_model.py
-```
+## Benchmark
 
-## Quick start
+All models are trained on the same 80% of the [SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection) (de-duplicated, so no test message appears in training) and scored on the remaining 20%. The LLM is scored on a fixed 300-message sample to stay within free-tier limits. The table is refreshed by GitHub Actions.
 
-### 1) Install
+<!-- BENCHMARK:START -->
+_Results are published here after the first benchmark run._
+<!-- BENCHMARK:END -->
+
+**What to look at.** In spam filtering a false positive (a real message hidden as spam) costs more than a missed spam, so the false-positive column matters as much as F1. Latency and tokens per message decide what each model costs at a million messages a day: Naive Bayes runs in microseconds on a CPU, while the LLM needs a network call per message. The "Where the models disagree" list on the live Benchmark page shows each model's blind spots.
+
+## How it's built
+
+- **Data.** `dataset.py` loads the corpus, removes exact duplicates and makes a seeded, stratified split, so every run and every model sees the same test set.
+- **Naive Bayes.** `model.py` is a dependency-free multinomial Naive Bayes with Laplace smoothing, optional bigrams and PII redaction. `token_evidence()` returns the log-odds each word contributes, which drives the word highlighting.
+- **Embeddings classifier.** `embedding_model.py` embeds messages with bge-small through FastEmbed (ONNX, CPU) and trains a class-balanced logistic regression in NumPy. The training vectors are kept for nearest-neighbour explanations.
+- **LLM classifier.** `llm_classifier.py` calls any OpenAI-compatible API (Groq by default) in JSON mode and treats the message as untrusted input.
+- **Serving.** `web.py` runs the two local models while the LLM call is in flight, so the page waits only for the slowest one. If the LLM fails, the other two verdicts still come back.
+- **Ops.** Both local models are trained during the Docker build. CI runs lint and tests on every push; the Benchmark workflow retrains with the real embedding model, re-scores, and redeploys.
+
+## Run locally
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+pip install -r requirements-dev.txt
+export PYTHONPATH=src
+python -m spamrectifier.benchmark          # train + benchmark (set LLM_API_KEY to include the LLM)
+uvicorn spamrectifier.web:app --port 7860  # http://localhost:7860
+EMBEDDER=hash pytest                       # offline tests
+```
+
+The original command-line tool is still here:
+
+```bash
 pip install -e .
-```
-
-### 2) Train a model
-
-```bash
 spamrectifier train --data data/sample.csv --output model.json
-```
-
-### 3) Generate a model card
-
-```bash
-spamrectifier train --data data/sample.csv --output model.json --model-card model-card.md
-```
-
-### 4) Evaluate
-
-```bash
-spamrectifier evaluate --data data/sample.csv --model model.json --positive-label spam
-```
-
-### 5) Predict
-
-```bash
-spamrectifier predict --model model.json --text "Free prizes for winners"
-```
-
-### 6) Explain a prediction
-
-```bash
 spamrectifier explain --model model.json --text "Claim your reward now"
+spamrectifier drift --model model.json --data data/sample.csv   # Jensen-Shannon drift report
 ```
 
-### 7) Drift monitoring
+## API
 
-```bash
-spamrectifier drift --model model.json --data data/sample.csv
-```
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/classify` | `{"text": "..."}` → each model's label, spam probability, explanation and latency, plus the majority verdict |
+| `GET /api/benchmark` | The latest benchmark |
+| `GET /health` | Liveness |
 
-### 8) Run the API + preview UI
+## Data
 
-```bash
-pip install -e ".[api]"
-spamrectifier serve --model model.json --host 0.0.0.0 --port 8000
-```
-
-Then open `http://localhost:8000/` to use the live preview UI.
-
-### 9) Preview-only UI (no API dependencies)
-
-```bash
-spamrectifier preview --port 8001
-```
-
-Then open `http://localhost:8001/` for the static preview experience (served from Python).
-
-## Data contract
-
-Input CSV must include:
-
-| Column | Description |
-|--------|-------------|
-| text   | The raw message or email content |
-| label  | The target class (e.g., `spam`, `ham`) |
-
-## Model details
-
-- **Algorithm**: Multinomial Naive Bayes
-- **Smoothing**: Laplace (+1)
-- **Features**: Unigrams + optional bigrams
-- **Tokenization**: Lowercased alphanumeric tokens with apostrophes/hyphens retained
-- **PII Redaction**: Optional email/URL/number redaction for privacy-safe training
-
-## Roadmap ideas
-
-- Plug-in feature extractors (sender reputation, advanced URL parsing).
-- Incremental training for high-volume pipelines.
-- Vector embeddings to combine semantics with Naive Bayes interpretability.
+SMS Spam Collection v.1 by Tiago A. Almeida and José María Gómez Hidalgo, UCI Machine Learning Repository, licensed CC BY 4.0. 5,574 English SMS messages, 747 of them spam.

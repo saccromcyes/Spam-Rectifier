@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spamrectifier"
-version = "0.1.0"
-description = "Practical spam detection toolkit with CLI, evaluation, and model persistence."
+version = "2.0.0"
+description = "SMS spam detection: from-scratch Naive Bayes, embeddings classifier and LLM, benchmarked side by side."
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "SpamRectifier" }]
+authors = [{ name = "Aakarsh Dutt Sharma" }]
 license = { text = "MIT" }
 keywords = ["spam", "nlp", "classifier", "naive-bayes"]
 classifiers = [
@@ -19,6 +19,7 @@ classifiers = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2.6"]
+web = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2.6", "fastembed>=0.9", "numpy>=2.0", "openai>=1.0"]
 
 [project.scripts]
 spamrectifier = "spamrectifier.cli:main"
@@ -31,3 +32,12 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 addopts = "-q"
+
+[tool.ruff]
+line-length = 130
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["B008", "B905", "E501", "SIM905"]
+

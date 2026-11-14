@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpamRectifier: three spam models, one message</title>
+  <meta name="description" content="Compare a from-scratch Naive Bayes, an embeddings classifier and an LLM on the same SMS message, with the reasons behind each verdict.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M5 7h22v14H14l-6 5v-5H5z' fill='%235B3CC4'/></svg>">
+</head>
+<body>
+  <header class="bar">
+    <div class="wrap bar-in">
+      <a href="/" class="brand"><svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true"><path d="M5 7h22v14H14l-6 5v-5H5z" fill="var(--violet)"/></svg>SpamRectifier</a>
+      <nav><a href="#" data-v="try" aria-current="page">Try a message</a><a href="#benchmark" data-v="benchmark">Benchmark</a><a href="/api/docs">API</a></nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="v-try">
+      <h1>Is this text message spam? Ask three models.</h1>
+      <p class="lede">A Naive Bayes classifier written from scratch, a sentence-embedding model, and a large language model each judge the same message, and each shows why. Trained and tested on 5,574 real SMS messages.</p>
+
+      <form id="form" class="compose">
+        <label for="msg" class="sr-only">Message</label>
+        <textarea id="msg" rows="3" maxlength="2000" required placeholder="Type or paste a text message…">URGENT! Your mobile number has won a £2000 bonus. Call 09066364589 now to claim.</textarea>
+        <button class="send" id="send" type="submit">Check message</button>
+      </form>
+      <div class="samples" id="samples">
+        <button type="button">Hey, are we still on for dinner at 8? I can pick up the wine</button>
+        <button type="button">Your account has been suspended. Verify your details at secure-bank-login.co to restore access</button>
+        <button type="button">Can u send me 500 for rent? I'll pay u back friday</button>
+        <button type="button">Congratulations, you've been selected for an exclusive reward. Reply YES</button>
+      </div>
+      <p class="error" id="error" hidden role="alert"></p>
+
+      <div id="out" hidden>
+        <div class="verdict" id="verdict"></div>
+        <div class="thread">
+          <p class="bubble" id="bubble"></p>
+          <p class="legend"><span class="sw spam"></span> words that point to spam <span class="sw ham"></span> words that point to a normal message, according to Naive Bayes</p>
+        </div>
+        <div class="models" id="models"></div>
+      </div>
+    </section>
+
+    <section id="v-benchmark" hidden>
+      <h1>Which model should you ship?</h1>
+      <p class="lede">All three models are scored on the same held-out messages they never saw in training. For spam filtering, false positives matter most: a real message hidden as spam costs more than a spam message that gets through.</p>
+      <div id="bench"><p class="muted">Loading…</p></div>
+    </section>
+  </main>
+
+  <footer class="foot"><div class="wrap"><p>Built by <a href="https://github.com/saccromcyes">Aakarsh Dutt Sharma</a>. <a href="https://github.com/saccromcyes/Spam-Rectifier">Source code</a>. Data: SMS Spam Collection v.1, Almeida and Gómez Hidalgo, UCI Machine Learning Repository (CC BY 4.0).</p></div></footer>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import socketserver
+from pathlib import Path
 
 from .data import load_csv
 from .features import FeatureConfig
-from .monitoring import drift_report
 from .model import NaiveBayesModel
+from .monitoring import drift_report
 from .preview import PreviewRequestHandler
 from .reporting import build_model_card, classification_report
 
@@ -146,8 +146,9 @@ def _handle_serve(args: argparse.Namespace) -> None:
             "FastAPI dependencies not installed. "
             "Run `pip install .[api]` to enable the service."
         )
-    from .api import create_app
     import uvicorn
+
+    from .api import create_app
     app = create_app(args.model)
     uvicorn.run(app, host=args.host, port=args.port)
 
