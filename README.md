@@ -1,7 +1,7 @@
 # SpamRectifier
 
 [![CI](https://github.com/saccromcyes/Spam-Rectifier/actions/workflows/ci.yml/badge.svg)](https://github.com/saccromcyes/Spam-Rectifier/actions/workflows/ci.yml)
-[![Live demo](https://img.shields.io/badge/live%20demo-Hugging%20Face-5B3CC4)](https://huggingface.co/spaces/saccromcyes/spam-rectifier)
+[![Live demo](https://img.shields.io/badge/live%20demo-Render-5B3CC4)](https://saccromcyes-spam.onrender.com)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 Three ways to catch SMS spam, judged on the same messages:
@@ -12,7 +12,7 @@ Three ways to catch SMS spam, judged on the same messages:
 | **Embeddings + logistic regression** | Sentence meaning (bge-small, ONNX) | Shows the most similar labelled training messages |
 | **LLM, zero-shot** | Reads the message like a person | Writes a one-sentence reason |
 
-**[Try it →](https://huggingface.co/spaces/saccromcyes/spam-rectifier)** Paste a message and see all three verdicts side by side, or open the Benchmark page.
+**[Try it →](https://saccromcyes-spam.onrender.com)** Paste a message and see all three verdicts side by side, or open the Benchmark page. It runs on a free tier, so if nobody has used it for a while the first visit takes about a minute to wake up.
 
 <!-- Screenshot added after the first deploy: docs/screenshot.png -->
 
@@ -38,7 +38,7 @@ _Held-out test set of 1031 messages (128 spam), run 2026-11-14._
 - **Embeddings classifier.** `embedding_model.py` embeds messages with bge-small through FastEmbed (ONNX, CPU) and trains a class-balanced logistic regression in NumPy. The training vectors are kept for nearest-neighbour explanations.
 - **LLM classifier.** `llm_classifier.py` calls any OpenAI-compatible API (Groq by default) in JSON mode and treats the message as untrusted input.
 - **Serving.** `web.py` runs the two local models while the LLM call is in flight, so the page waits only for the slowest one. If the LLM fails, the other two verdicts still come back.
-- **Ops.** Both local models are trained during the Docker build. CI runs lint and tests on every push; the Benchmark workflow retrains with the real embedding model, re-scores, and redeploys.
+- **Ops.** Both local models are trained during the Docker build. CI runs lint, tests and a free-tier fit check on every push; the Benchmark workflow retrains with the real embedding model and re-scores.
 
 ## Run locally
 
@@ -58,6 +58,10 @@ spamrectifier train --data data/sample.csv --output model.json
 spamrectifier explain --model model.json --text "Claim your reward now"
 spamrectifier drift --model model.json --data data/sample.csv   # Jensen-Shannon drift report
 ```
+
+## Deployment
+
+**Deployment.** The app runs on Render's free tier (512 MB of memory, a tenth of a CPU core), defined in the [Blueprint](https://github.com/saccromcyes/saccromcyes.github.io/blob/main/render.yaml) that deploys all of my demos; every push to `main` that passes CI redeploys it. The CI job *Fits Render free tier* starts the production image under exactly those limits, sends a real request, and fails if the app runs out of memory or doesn't become healthy, so a change can't silently break the live demo.
 
 ## API
 

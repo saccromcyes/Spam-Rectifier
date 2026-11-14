@@ -17,6 +17,8 @@
   --violet: #A996FF; --violet-wash: #2A2445; --on-violet: #121119;
   --spam: #FF8A80; --spam-wash: #3E1E1D; --ham: #6FD3A2; --ham-wash: #17332A; color-scheme: dark;
 }
+/* The hidden attribute must win over any display rule below. */
+[hidden] { display: none !important; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--font); font-variant-numeric: tabular-nums; }
 a { color: var(--violet); }

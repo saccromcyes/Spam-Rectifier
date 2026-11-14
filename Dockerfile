@@ -22,4 +22,5 @@ COPY --chown=user results ./results
 RUN python -m spamrectifier.benchmark --build-only && python -c "import numpy as np; assert str(np.load('artifacts/embedding_model.npz', allow_pickle=True)['embedder'][0]) != 'hashing'"
 
 EXPOSE 7860
-CMD ["uvicorn", "spamrectifier.web:app", "--host", "0.0.0.0", "--port", "7860", "--proxy-headers", "--forwarded-allow-ips", "*"]
+# Render (and most hosts) set PORT; default to 7860 for local runs.
+CMD ["sh", "-c", "exec uvicorn spamrectifier.web:app --host 0.0.0.0 --port ${PORT:-7860} --proxy-headers --forwarded-allow-ips '*'"]

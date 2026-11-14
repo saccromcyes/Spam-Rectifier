@@ -21,3 +21,20 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
       - run: pytest
+
+  free-tier:
+    name: Fits Render free tier (512 MB, 0.1 CPU)
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the production image
+        run: docker build -t app .
+      - name: Start it inside the free-tier limits and send a real request
+        run: bash scripts/free_tier_smoke.sh
+        env:
+          HEALTH: '/health'
+          METHOD: 'POST'
+          REQ_PATH: '/api/classify'
+          BODY: '{"text": "URGENT! Your mobile number has won a 2000 bonus. Call 09066364589 now to claim."}'
+          EXPECT: '"consensus"'
