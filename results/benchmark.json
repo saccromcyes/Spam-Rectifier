@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-11-14T20:51:56+00:00",
+  "run_at": "2026-11-14T21:52:42+00:00",
   "dataset": "SMS Spam Collection v.1 (UCI, CC BY 4.0), de-duplicated",
   "train_size": 4128,
   "test_size": 1031,
@@ -41,7 +41,7 @@
         },
         "n": 1031
       },
-      "latency_ms": 16.228
+      "latency_ms": 16.403
     }
   ],
   "disagreements": [

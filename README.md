@@ -26,7 +26,7 @@ _Held-out test set of 1031 messages (128 spam), run 2026-11-14._
 | Model | F1 (spam) | Precision | Recall | False positives | Latency / message |
 |---|---|---|---|---|---|
 | Naive Bayes (from scratch) | **0.908** | 0.860 | 0.961 | 2.2% of ham | 0.02 ms |
-| Embeddings + logistic regression (BAAI/bge-small-en-v1.5) | **0.844** | 0.758 | 0.953 | 4.3% of ham | 16.23 ms |
+| Embeddings + logistic regression (BAAI/bge-small-en-v1.5) | **0.844** | 0.758 | 0.953 | 4.3% of ham | 16.40 ms |
 <!-- BENCHMARK:END -->
 
 **What to look at.** In spam filtering a false positive (a real message hidden as spam) costs more than a missed spam, so the false-positive column matters as much as F1. Latency and tokens per message decide what each model costs at a million messages a day: Naive Bayes runs in microseconds on a CPU, while the LLM needs a network call per message. The "Where the models disagree" list on the live Benchmark page shows each model's blind spots.
