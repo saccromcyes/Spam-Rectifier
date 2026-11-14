@@ -83,7 +83,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--build-only", action="store_true")
     parser.add_argument("--embedder", default=os.getenv("EMBEDDER", "fastembed"))
-    parser.add_argument("--llm-sample", type=int, default=300)
+    parser.add_argument("--llm-sample", type=int, default=150)
     parser.add_argument("--pause", type=float, default=0.3)
     parser.add_argument("--no-write", action="store_true")
     args = parser.parse_args()
@@ -107,22 +107,32 @@ def main() -> int:
     llm = LLMClassifier.from_env()
     if llm:
         n = min(args.llm_sample, len(split.test_texts))
-        llm_pred, latencies, tokens = [], [], []
+        llm_pred, latencies, tokens, errors = [], [], [], []
         for text in split.test_texts[:n]:
             try:
                 out = llm.classify(text)
                 llm_pred.append(out["label"])
                 latencies.append(out["latency_ms"])
                 tokens.append(out["tokens"] or 0)
-            except Exception as exc:  # count provider failures as misses rather than crashing
-                print(f"LLM error: {exc}")
-                llm_pred.append("ham")
+            except Exception as exc:
+                # A failed call is not a "ham" verdict: leave it out of the metrics and count it.
+                errors.append(str(exc)[:120])
+                llm_pred.append(None)
             time.sleep(args.pause)
-        models.append({
-            "key": "llm", "label": f"LLM zero-shot ({llm.model})", "metrics": metrics(truth[:n], llm_pred),
-            "latency_ms": round(statistics.median(latencies), 1) if latencies else None,
-            "tokens_per_message": round(statistics.mean(tokens)) if tokens else None,
-        })
+        if len(errors) > 0.1 * n:
+            print(f"FAIL: {len(errors)} of {n} LLM calls failed (first: {errors[0]}); results not published.")
+            return 1
+        scored = [(t, p) for t, p in zip(truth[:n], llm_pred) if p is not None]
+        models.append(
+            {
+                "key": "llm",
+                "label": f"LLM zero-shot ({llm.model})",
+                "metrics": metrics([t for t, _ in scored], [p for _, p in scored]),
+                "latency_ms": round(statistics.median(latencies), 1) if latencies else None,
+                "tokens_per_message": round(statistics.mean(tokens)) if tokens else None,
+                "failed_calls": len(errors),
+            }
+        )
         predictions["llm"] = llm_pred + [None] * (len(truth) - n)
 
     for row in models:

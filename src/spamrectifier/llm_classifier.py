@@ -18,13 +18,19 @@ class LLMClassifier:
     def __init__(self, api_key: str | None = None, base_url: str | None = None, model: str | None = None):
         from openai import OpenAI
 
-        self.model = model or os.getenv("LLM_MODEL", "llama-3.1-8b-instant")
+        self.model = model or os.getenv("LLM_MODEL", "openai/gpt-oss-20b")
         self._client = OpenAI(
             api_key=api_key or os.environ["LLM_API_KEY"],
             base_url=base_url or os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1"),
             timeout=20,
-            max_retries=2,
+            max_retries=int(os.getenv("LLM_MAX_RETRIES", "2")),
         )
+
+        base = base_url or os.getenv("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+        effort = os.getenv("LLM_REASONING_EFFORT", "low")
+        self._options: dict = {"reasoning_effort": effort} if effort else {}
+        if "groq.com" in base:
+            self._options["extra_body"] = {"include_reasoning": False}
 
     @classmethod
     def from_env(cls) -> LLMClassifier | None:
@@ -36,7 +42,8 @@ class LLMClassifier:
             model=self.model,
             messages=[{"role": "system", "content": SYSTEM}, {"role": "user", "content": f"Message:\n{text[:2000]}"}],
             temperature=0.0,
-            max_tokens=120,
+            max_tokens=1200,  # gpt-oss reasons before answering; reasoning counts toward this
+            **self._options,
             response_format={"type": "json_object"},
         )
         raw = response.choices[0].message.content or "{}"
