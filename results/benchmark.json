@@ -1,0 +1,145 @@
+{
+  "run_at": "2026-11-14T20:51:56+00:00",
+  "dataset": "SMS Spam Collection v.1 (UCI, CC BY 4.0), de-duplicated",
+  "train_size": 4128,
+  "test_size": 1031,
+  "test_spam": 128,
+  "models": [
+    {
+      "key": "naive_bayes",
+      "label": "Naive Bayes (from scratch)",
+      "metrics": {
+        "accuracy": 0.9758,
+        "precision": 0.8601,
+        "recall": 0.9609,
+        "f1": 0.9077,
+        "false_positive_rate": 0.0221,
+        "confusion": {
+          "tp": 123,
+          "fp": 20,
+          "fn": 5,
+          "tn": 883
+        },
+        "n": 1031
+      },
+      "latency_ms": 0.024
+    },
+    {
+      "key": "embeddings",
+      "label": "Embeddings + logistic regression (BAAI/bge-small-en-v1.5)",
+      "metrics": {
+        "accuracy": 0.9564,
+        "precision": 0.7578,
+        "recall": 0.9531,
+        "f1": 0.8443,
+        "false_positive_rate": 0.0432,
+        "confusion": {
+          "tp": 122,
+          "fp": 39,
+          "fn": 6,
+          "tn": 864
+        },
+        "n": 1031
+      },
+      "latency_ms": 16.228
+    }
+  ],
+  "disagreements": [
+    {
+      "text": "V nice! Off 2 sheffield tom 2 air my opinions on categories 2 b used 2 measure ethnicity in next census. Busy transcribing. :-)",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "How would my ip address test that considering my computer isn't a minecraft server",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "Only 2% students solved this CAT question in 'xam... 5+3+2= &lt;#&gt;  9+2+4= &lt;#&gt;  8+6+3= &lt;#&gt;  then 7+2+5=????? Tell me the answer if u r brilliant...1thing.i got d answr.",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "wiskey Brandy Rum Gin Beer Vodka Scotch Shampain Wine \"KUDI\"yarasu dhina vaazhthukkal. ..",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "spam",
+        "embeddings": "ham"
+      }
+    },
+    {
+      "text": "Message from . I am at Truro Hospital on ext. You can phone me here. as I have a phone by my side",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "Hahaha..use your brain dear",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "spam",
+        "embeddings": "ham"
+      }
+    },
+    {
+      "text": "Garbage bags, eggs, jam, bread, hannaford wheat chex",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "spam",
+        "embeddings": "ham"
+      }
+    },
+    {
+      "text": "She.s fine. I have had difficulties with her phone. It works with mine. Can you pls send her another friend request.",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "There r many model..sony ericson also der.. &lt;#&gt; ..it luks good bt i forgot modl no",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "Don't fret. I'll buy the ovulation test strips and send them to you. You wont get them til like march. Can you send me your postal address.u'll be alright.Okay.",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "Right it wasnt you who phoned it was someone with a number like yours!",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    },
+    {
+      "text": "Sent me ur email id soon",
+      "truth": "ham",
+      "votes": {
+        "naive_bayes": "ham",
+        "embeddings": "spam"
+      }
+    }
+  ]
+}
